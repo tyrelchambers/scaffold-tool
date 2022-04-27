@@ -1,9 +1,14 @@
 import { Actions, projectReducer } from "./reducers/projectReducer";
-import { faCircle, faFolder } from "@fortawesome/free-solid-svg-icons";
+import { CreateHandler, Flag, FlagValue } from "./types";
+import {
+  faCheckCircle,
+  faCircle,
+  faFolder,
+} from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useReducer } from "react";
 
-import { CreateHandler } from "./types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { RadioGroup } from "@headlessui/react";
 import commands from "./data/commands";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { getFullExec } from "./utils/getFullExec";
@@ -23,16 +28,21 @@ const App = () => {
   }, [command]);
 
   const directoryHandler = async () => {
+    // @ts-expect-error
     const file = await window.ipcRenderer.openDialog();
-    // setProject({ ...project, path: file[0] });
+    dispatch({
+      type: Actions.SET_DIRECTORY,
+      payload: file[0],
+    });
   };
 
   const createHandler = async (project: CreateHandler | null) => {
     if (!project) return;
 
     const fullCmd = await getFullExec(project);
+    console.log(fullCmd);
 
-    window.ipcRenderer.createProject(project.path, fullCmd);
+    // window.ipcRenderer.createProject(project.path, fullCmd);
   };
 
   return (
@@ -49,47 +59,76 @@ const App = () => {
         Let's fill out some information
       </p>
 
-      {console.log(project)}
+      {/* {console.log(project)} */}
 
       {command && (
         <div className="p-4 rounded-lg bg-zinc-800 mt-8 w-fit">
           <p className="text-zinc-200 text-lg">
             <span className="mr-4 select-none text-indigo-300">$</span>{" "}
-            {project?.command?.command} {project?.name} --{" "}
-            {project?.flags
-              ?.map(
-                (flag) => `${Object.keys(flag)[0]} ${Object.values(flag)[0]}`
-              )
-              .join(" ")}
+            {getFullExec(project)}
           </p>
         </div>
       )}
 
       <main className="flex max-w-screen-xl gap-20">
-        <section className="mt-10 border-2 border-zinc-800 p-4 rounded-lg h-fit">
-          <div className="grid grid-cols-2  w-full">
-            {commands.map((cmd) => (
-              <button
-                className={`bg-zinc-800 rounded-lg p-4 flex gap-6 hover:bg-zinc-700 transition-all`}
-                onClick={() => setCommand(cmd)}
-              >
-                <img src={cmd.logo} alt="" className="h-10" />
-                <div className="flex flex-col items-start">
-                  <p className={`text-lg text-zinc-200`}>{cmd.name}</p>
-                  <p className="text-sm text-zinc-400">
-                    <span className={`mr-2 select-none`}>$</span>
-                    {cmd.command}
-                  </p>
-                </div>
-              </button>
-            ))}
+        <section className="mt-10">
+          <div className=" w-[400px]">
+            <RadioGroup
+              value={command}
+              onChange={(e) => setCommand(e)}
+              className="flex flex-col gap-6"
+            >
+              {commands.map((cmd) => (
+                <RadioGroup.Option
+                  value={cmd}
+                  key={cmd.name}
+                  className={({ active, checked }) =>
+                    `${
+                      active
+                        ? "ring-2 ring-white ring-opacity-60 ring-offset-2 ring-offset-indigo-300 "
+                        : ""
+                    }
+                  ${
+                    checked
+                      ? "bg-indigo-500 bg-opacity-75 text-white"
+                      : "bg-zinc-800 "
+                  }
+                    focus:outline-none relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md`
+                  }
+                >
+                  {({ checked }) => (
+                    <span className={`flex gap-6 items-center w-full`}>
+                      <img src={cmd.logo} alt="" className="h-8" />
+
+                      <div className="flex flex-col w-full">
+                        <RadioGroup.Label
+                          as="p"
+                          className={`  ${
+                            checked ? "text-white font-bold" : "text-gray-300"
+                          }`}
+                        >
+                          {cmd.name}
+                        </RadioGroup.Label>
+                      </div>
+
+                      {checked && (
+                        <FontAwesomeIcon
+                          icon={faCheckCircle}
+                          className=" p-2 rounded-full bg-indigo-500 text-white shadow-md"
+                        />
+                      )}
+                    </span>
+                  )}
+                </RadioGroup.Option>
+              ))}
+            </RadioGroup>
           </div>
         </section>
 
         {project?.command && (
           <div className="flex flex-col w-full max-w-lg">
             <section className="mt-10">
-              <h2 className="text-zinc-200 text-lg">
+              <h2 className="text-zinc-200 text-2xl">
                 Name your <span className="  font-bold">project</span>
               </h2>
               <input
@@ -107,36 +146,63 @@ const App = () => {
             </section>
 
             <section className="mt-10">
-              <h2 className="text-zinc-200 text-lg">
-                Choose your <span className="font-bold">flags</span>
+              <h2 className="text-zinc-200 text-2xl">
+                Choose your <span className="font-bold ">flags</span>
               </h2>
-              <div className="flex gap-4 mt-4">
+              <div className="flex flex-col gap-8 mt-8">
                 {project?.command?.flags?.map((flag) => (
                   <div
-                    className="border-2 border-zinc-700 rounded-lg"
                     key={flag.label}
+                    className="bg-zinc-800 rounded-lg overflow-hidden "
                   >
-                    <header className="bg-zinc-700 p-4 ">
-                      <p className="text-zinc-100">{flag.label}</p>
+                    <header className="flex flex-col px-4 py-2 bg-zinc-700">
+                      <p className="text-zinc-100 text-lg">{flag.label}</p>
+                      <p className="text-zinc-200">{flag.description}</p>
                     </header>
-                    <div className=" flex gap-4 flex-wrap mt-2 p-2">
-                      {flag.values.map((val) => (
-                        <button
-                          onClick={() =>
-                            dispatch({
-                              type: Actions.SET_FLAG,
-                              payload: {
-                                label: flag.label,
-                                value: val,
-                              },
-                            })
-                          }
-                          className="w-fit p-2 px-4 rounded-full text-zinc-200 bg-zinc-800 hover:bg-indigo-700 transition-all text-sm"
-                        >
-                          {val}
-                        </button>
+                    {flag?.values && !flag.isCheckbox && (
+                      <div className=" flex gap-4 flex-wrap mt-2 p-2">
+                        {flag.values.map((val) => (
+                          <button
+                            onClick={() =>
+                              dispatch({
+                                type: Actions.SET_FLAG,
+                                payload: {
+                                  label: flag.label,
+                                  value: val,
+                                },
+                              })
+                            }
+                            className="flex-1 whitespace-nowrap p-2 px-4 rounded-full text-zinc-200 border-2 border-zinc-200 hover:bg-indigo-700 transition-all text-sm"
+                          >
+                            <>{val}</>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {flag.isCheckbox &&
+                      flag.values?.map((val) => (
+                        <div className="py-2 px-4">
+                          <input
+                            type="checkbox"
+                            className="mr-2"
+                            name={val.name}
+                            onChange={(e) => {
+                              dispatch({
+                                type: Actions.SET_FLAG,
+                                payload: {
+                                  label: flag.label,
+                                  value: e.target.checked,
+                                  isCheckbox: true,
+                                },
+                              });
+                            }}
+                          />
+                          <label className="text-zinc-100" htmlFor={val.name}>
+                            {val.label}
+                          </label>
+                        </div>
                       ))}
-                    </div>
                   </div>
                 ))}
               </div>
@@ -174,7 +240,7 @@ const App = () => {
             {project?.path && project.command && project.name && (
               <button
                 onClick={() => createHandler(project)}
-                className="bg-green-400 text-zinc-800 p-2 text-sm rounded-lg"
+                className="bg-green-500 text-zinc-800 p-4 mt-8 text-sm rounded-lg"
               >
                 Create
               </button>

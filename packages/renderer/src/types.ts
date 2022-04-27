@@ -1,20 +1,26 @@
-type Flag = {
+export type FlagValue = {
   label: string;
-  values: string[];
+  name: string;
 };
+export interface Flag {
+  label: string;
+  values?: FlagValue[];
+  isCheckbox?: boolean;
+  description?: string;
+}
 
-export type Command = {
+export interface Command {
   name: string;
   command: string;
   flags?: Flag[];
   logo?: string;
-};
+}
 
-export type Project = {
+export interface Project {
   name?: string;
   command?: Command;
   path?: string;
   flags?: { [key: string]: string }[];
-};
+}
 
 export type CreateHandler = Project;

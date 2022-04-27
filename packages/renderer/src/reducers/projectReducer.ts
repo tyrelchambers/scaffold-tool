@@ -5,16 +5,15 @@ export enum Actions {
   SET_COMMAND = "SET_COMMAND",
   SET_NAME = "SET_NAME",
   SET_FLAG = "SET_FLAG",
+  SET_DIRECTORY = "SET_DIRECTORY",
 }
 
-type State = Project | null | undefined;
-
-type Action = {
+interface Action {
   type: Actions;
   payload: any;
-};
+}
 
-export const projectReducer: Reducer<State, Action> = (state, action) => {
+export const projectReducer: Reducer<Project, Action> = (state, action) => {
   switch (action.type) {
     case Actions.SET_COMMAND: {
       return {
@@ -31,6 +30,8 @@ export const projectReducer: Reducer<State, Action> = (state, action) => {
     }
 
     case Actions.SET_FLAG: {
+      console.log(state.flags);
+
       return {
         ...state,
         flags: [
@@ -38,6 +39,13 @@ export const projectReducer: Reducer<State, Action> = (state, action) => {
             [action.payload.label]: action.payload.value,
           },
         ],
+      };
+    }
+
+    case Actions.SET_DIRECTORY: {
+      return {
+        ...state,
+        path: action.payload,
       };
     }
   }
