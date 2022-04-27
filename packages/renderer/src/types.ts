@@ -1,6 +1,6 @@
 export type FlagValue = {
-  label: string;
   name: string;
+  label?: string;
 };
 export interface Flag {
   label: string;
