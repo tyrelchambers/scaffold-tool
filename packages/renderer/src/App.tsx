@@ -1,14 +1,17 @@
 import { Actions, projectReducer } from "./reducers/projectReducer";
 import { CreateHandler, Flag, FlagValue } from "./types";
+import { Popover, RadioGroup } from "@headlessui/react";
 import {
+  faArrowRight,
   faCheckCircle,
   faCircle,
   faFolder,
+  faMinus,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useReducer } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { RadioGroup } from "@headlessui/react";
 import commands from "./data/commands";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { getFullExec } from "./utils/getFullExec";
@@ -90,7 +93,7 @@ const App = () => {
                     }
                   ${
                     checked
-                      ? "bg-indigo-500 bg-opacity-75 text-white"
+                      ? "bg-indigo-600 bg-opacity-100 text-white"
                       : "bg-zinc-800 "
                   }
                     focus:outline-none relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md`
@@ -103,7 +106,7 @@ const App = () => {
                       <div className="flex flex-col w-full">
                         <RadioGroup.Label
                           as="p"
-                          className={`  ${
+                          className={`${
                             checked ? "text-white font-bold" : "text-gray-300"
                           }`}
                         >
@@ -128,13 +131,13 @@ const App = () => {
         {project?.command && (
           <div className="flex flex-col w-full max-w-lg">
             <section className="mt-10">
-              <h2 className="text-zinc-200 text-2xl">
+              <h2 className="text-zinc-200 text-xl">
                 Name your <span className="  font-bold">project</span>
               </h2>
               <input
                 type="text"
                 placeholder="my cool project"
-                className="bg-zinc-900 p-4 rounded-lg w-full max-w-sm mt-4 border-2 border-zinc-600 text-white"
+                className="bg-zinc-900 p-4 rounded-lg w-full mt-4 border-2 border-zinc-600 text-white"
                 value={project?.name}
                 onChange={(e) =>
                   dispatch({
@@ -146,63 +149,87 @@ const App = () => {
             </section>
 
             <section className="mt-10">
-              <h2 className="text-zinc-200 text-2xl">
+              <h2 className="text-zinc-200 text-xl">
                 Choose your <span className="font-bold ">flags</span>
               </h2>
-              <div className="flex flex-col gap-8 mt-8">
-                {project?.command?.flags?.map((flag) => (
-                  <div
-                    key={flag.label}
-                    className="bg-zinc-800 rounded-lg overflow-hidden "
-                  >
-                    <header className="flex flex-col px-4 py-2 bg-zinc-700">
-                      <p className="text-zinc-100 text-lg">{flag.label}</p>
-                      <p className="text-zinc-200">{flag.description}</p>
-                    </header>
-                    {flag?.values && !flag.isCheckbox && (
-                      <div className=" flex gap-4 flex-wrap mt-2 p-2">
-                        {flag.values.map((val) => (
-                          <button
-                            onClick={() =>
-                              dispatch({
-                                type: Actions.SET_FLAG,
-                                payload: {
-                                  label: flag.label,
-                                  value: val,
-                                },
-                              })
-                            }
-                            className="flex-1 whitespace-nowrap p-2 px-4 rounded-full text-zinc-200 border-2 border-zinc-200 hover:bg-indigo-700 transition-all text-sm"
-                          >
-                            <>{val}</>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+              <Popover className="relative w-full mt-4">
+                {({ open }) => (
+                  <>
+                    <Popover.Button
+                      className={`bg-zinc-800 w-full p-4 rounded-lg text-white hover:bg-indigo-500 transition-all font-bold justify-between flex items-center ${
+                        open ? "bg-indigo-600" : "bg-zinc-800"
+                      }`}
+                    >
+                      Select flags
+                      <FontAwesomeIcon icon={open ? faMinus : faPlus} />
+                    </Popover.Button>
+                    <Popover.Panel className="absolute z-10 bg-zinc-800 w-full p-2 mt-2 rounded-lg">
+                      <div className="flex flex-col gap-2  ">
+                        {project?.command?.flags?.map((flag) => {
+                          const isActive = project.flags?.some(
+                            (f) => f.label === flag.label
+                          );
 
-                    {flag.isCheckbox &&
-                      flag.values?.map((val) => (
-                        <div className="py-2 px-4">
-                          <input
-                            type="checkbox"
-                            className="mr-2"
-                            name={val.name}
-                            onChange={(e) => {
-                              dispatch({
-                                type: Actions.SET_FLAG,
-                                payload: {
-                                  label: flag.label,
-                                  value: e.target.checked,
-                                  isCheckbox: true,
-                                },
-                              });
-                            }}
-                          />
-                          <label className="text-zinc-100" htmlFor={val.name}>
-                            {val.label}
-                          </label>
-                        </div>
-                      ))}
+                          return (
+                            <button
+                              className={`flex items-center  p-2 px-4 rounded-lg hover:bg-indigo-500 transition-all ${
+                                isActive ? "bg-indigo-600" : "bg-zinc-800"
+                              }`}
+                              onClick={() =>
+                                dispatch({
+                                  type: Actions.SET_FLAG,
+                                  payload: {
+                                    label: flag.label,
+                                    value: "",
+                                  },
+                                })
+                              }
+                            >
+                              <>
+                                <div className="flex flex-col items-start w-full">
+                                  <p className="text-white text-lg">
+                                    {flag.label}
+                                  </p>
+                                  <p className="text-gray-300 text-sm">
+                                    {flag.description}
+                                  </p>
+                                </div>
+
+                                {isActive && (
+                                  <FontAwesomeIcon
+                                    icon={faCheckCircle}
+                                    className=" p-2 rounded-full bg-indigo-500 text-white shadow-md"
+                                  />
+                                )}
+                              </>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </Popover.Panel>
+                  </>
+                )}
+              </Popover>
+
+              <div className="mt-4 flex flex-col gap-4">
+                {command?.flags?.map((flag) => (
+                  <div className="flex flex-col bg-indigo-600 rounded-lg overflow-hidden">
+                    <label
+                      htmlFor={flag.label}
+                      className="text-white bg-indigo-700 p-3 "
+                    >
+                      {flag.label}
+                    </label>
+
+                    {flag.values?.map((val) => (
+                      <button className="p-3 border-b-[1px] border-indigo-500 flex items-center last:border-b-0 hover:bg-indigo-500 transition-all">
+                        <FontAwesomeIcon
+                          icon={faArrowRight}
+                          className="mr-6 text-white"
+                        />
+                        <p className="text-white">{val.name}</p>
+                      </button>
+                    ))}
                   </div>
                 ))}
               </div>

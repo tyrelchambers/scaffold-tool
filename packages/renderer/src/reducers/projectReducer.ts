@@ -1,4 +1,5 @@
-import { Project } from "@/types";
+import { FlagValue, Project } from "@/types";
+
 import { Reducer } from "react";
 
 export enum Actions {
@@ -19,6 +20,7 @@ export const projectReducer: Reducer<Project, Action> = (state, action) => {
       return {
         ...state,
         command: action.payload,
+        flags: [],
       };
     }
 
@@ -30,15 +32,22 @@ export const projectReducer: Reducer<Project, Action> = (state, action) => {
     }
 
     case Actions.SET_FLAG: {
-      console.log(state.flags);
+      const cloneFlags: FlagValue[] = [...state.flags];
+
+      // remove flag if it exists else add it
+      const index = cloneFlags.findIndex(
+        (flag) => flag.label === action.payload.label
+      );
+
+      if (index === -1) {
+        cloneFlags.push(action.payload);
+      } else {
+        cloneFlags.splice(index, 1);
+      }
 
       return {
         ...state,
-        flags: [
-          {
-            [action.payload.label]: action.payload.value,
-          },
-        ],
+        flags: [...cloneFlags],
       };
     }
 

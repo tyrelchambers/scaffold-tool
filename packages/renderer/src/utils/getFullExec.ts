@@ -6,23 +6,21 @@ export const getFullExec = (project: Project): string => {
       return "";
     }
 
-    for (let i = 0; i < project?.flags.length; i++) {
-      const element = project?.flags[i];
-      console.log(element);
-    }
+    return project.flags
+      .map((flag) => {
+        console.log(flag);
 
-    // return project.flags.map((flag) => {
-    //   const keys = Object.keys(flag);
-    //   const key = keys[0];
-    //   const value = flag[key];
-    //   console.log(keys);
+        const keys = Object.keys(flag);
+        const key = keys[0];
+        const value = flag[key];
 
-    //   if (value === true) {
-    //     return `${key}`;
-    //   }
+        if (value === true) {
+          return `${key}`;
+        }
 
-    //   return `${key} ${value}`;
-    // });
+        return `${flag.label} ${flag.value}`;
+      })
+      .join(" ");
   };
 
   return `${project?.command?.command} ${flags()} `;

@@ -8,6 +8,7 @@ const commands: Command[] = [
     flags: [
       {
         label: "--template",
+        description: "Pick from a list of templates",
         values: [
           { name: "vanilla" },
           { name: "vanilla-ts" },
