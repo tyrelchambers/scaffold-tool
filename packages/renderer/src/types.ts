@@ -1,12 +1,13 @@
-export type FlagValue = {
+export interface FlagValue {
   name: string;
   label?: string;
-};
+}
 export interface Flag {
-  label: string;
+  label?: string;
   values?: FlagValue[];
   isCheckbox?: boolean;
   description?: string;
+  value?: string;
 }
 
 export interface Command {
@@ -20,7 +21,7 @@ export interface Project {
   name?: string;
   command?: Command;
   path?: string;
-  flags?: { [key: string]: string }[];
+  flags?: Flag[];
 }
 
 export type CreateHandler = Project;

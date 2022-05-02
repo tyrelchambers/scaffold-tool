@@ -43,7 +43,6 @@ const App = () => {
     if (!project) return;
 
     const fullCmd = await getFullExec(project);
-    console.log(fullCmd);
 
     // window.ipcRenderer.createProject(project.path, fullCmd);
   };
@@ -137,7 +136,7 @@ const App = () => {
               <input
                 type="text"
                 placeholder="my cool project"
-                className="bg-zinc-900 p-4 rounded-lg w-full mt-4 border-2 border-zinc-600 text-white"
+                className="bg-zinc-900 p-4 rounded-lg w-full mt-4 border-2 border-zinc-600 text-white outline-indigo-500"
                 value={project?.name}
                 onChange={(e) =>
                   dispatch({
@@ -163,7 +162,7 @@ const App = () => {
                       Select flags
                       <FontAwesomeIcon icon={open ? faMinus : faPlus} />
                     </Popover.Button>
-                    <Popover.Panel className="absolute z-10 bg-zinc-800 w-full p-2 mt-2 rounded-lg">
+                    <Popover.Panel className="absolute z-10 bg-zinc-700 w-full p-2 mt-2 rounded-lg">
                       <div className="flex flex-col gap-2  ">
                         {project?.command?.flags?.map((flag) => {
                           const isActive = project.flags?.some(
@@ -172,16 +171,13 @@ const App = () => {
 
                           return (
                             <button
-                              className={`flex items-center  p-2 px-4 rounded-lg hover:bg-indigo-500 transition-all ${
+                              className={`flex items-center  p-2 px-4 rounded-lg hover:bg-indigo-500 transition-all shadow-lg ${
                                 isActive ? "bg-indigo-600" : "bg-zinc-800"
                               }`}
                               onClick={() =>
                                 dispatch({
                                   type: Actions.SET_FLAG,
-                                  payload: {
-                                    label: flag.label,
-                                    value: "",
-                                  },
+                                  payload: flag,
                                 })
                               }
                             >
@@ -212,8 +208,8 @@ const App = () => {
               </Popover>
 
               <div className="mt-4 flex flex-col gap-4">
-                {command?.flags?.map((flag) => (
-                  <div className="flex flex-col bg-indigo-600 rounded-lg overflow-hidden">
+                {project?.flags?.map((flag) => (
+                  <div className="flex flex-col bg-zinc-800 rounded-lg overflow-hidden">
                     <label
                       htmlFor={flag.label}
                       className="text-white bg-indigo-700 p-3 "
@@ -221,15 +217,27 @@ const App = () => {
                       {flag.label}
                     </label>
 
-                    {flag.values?.map((val) => (
-                      <button className="p-3 border-b-[1px] border-indigo-500 flex items-center last:border-b-0 hover:bg-indigo-500 transition-all">
-                        <FontAwesomeIcon
-                          icon={faArrowRight}
-                          className="mr-6 text-white"
-                        />
-                        <p className="text-white">{val.name}</p>
-                      </button>
-                    ))}
+                    {!flag.isCheckbox &&
+                      flag?.values?.map((val) => (
+                        <button
+                          className="p-3 border-b-[1px] border-zinc-500 flex items-center last:border-b-0 hover:bg-indigo-500 transition-all"
+                          onClick={() =>
+                            dispatch({
+                              type: Actions.UPDATE_FLAG,
+                              payload: {
+                                label: flag.label,
+                                name: val.name,
+                              },
+                            })
+                          }
+                        >
+                          <FontAwesomeIcon
+                            icon={faArrowRight}
+                            className="mr-6 text-white"
+                          />
+                          <p className="text-white">{val.name}</p>
+                        </button>
+                      ))}
                   </div>
                 ))}
               </div>

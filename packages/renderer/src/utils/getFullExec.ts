@@ -8,8 +8,6 @@ export const getFullExec = (project: Project): string => {
 
     return project.flags
       .map((flag) => {
-        console.log(flag);
-
         const keys = Object.keys(flag);
         const key = keys[0];
         const value = flag[key];
@@ -18,10 +16,10 @@ export const getFullExec = (project: Project): string => {
           return `${key}`;
         }
 
-        return `${flag.label} ${flag.value}`;
+        return `${flag.label} ${flag.value || ""}`;
       })
       .join(" ");
   };
 
-  return `${project?.command?.command} ${flags()} `;
+  return `${project?.command?.command} ${project.name || ""} ${flags()} `;
 };

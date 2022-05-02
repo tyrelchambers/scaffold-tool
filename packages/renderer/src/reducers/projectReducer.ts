@@ -1,4 +1,4 @@
-import { FlagValue, Project } from "@/types";
+import { Flag, FlagValue, Project } from "@/types";
 
 import { Reducer } from "react";
 
@@ -7,6 +7,7 @@ export enum Actions {
   SET_NAME = "SET_NAME",
   SET_FLAG = "SET_FLAG",
   SET_DIRECTORY = "SET_DIRECTORY",
+  UPDATE_FLAG = "UPDATE_FLAG",
 }
 
 interface Action {
@@ -25,9 +26,10 @@ export const projectReducer: Reducer<Project, Action> = (state, action) => {
     }
 
     case Actions.SET_NAME: {
+      const name = action.payload;
       return {
         ...state,
-        name: action.payload,
+        name: name.replace(/\s/g, "-"),
       };
     }
 
@@ -44,6 +46,28 @@ export const projectReducer: Reducer<Project, Action> = (state, action) => {
       } else {
         cloneFlags.splice(index, 1);
       }
+
+      console.log(cloneFlags);
+
+      return {
+        ...state,
+        flags: [...cloneFlags],
+      };
+    }
+
+    case Actions.UPDATE_FLAG: {
+      const value = action.payload.name;
+      const cloneFlags: Flag[] = [...state.flags];
+
+      const index = cloneFlags.findIndex(
+        (flag) => flag.label === action.payload.label
+      );
+
+      if (index !== -1) {
+        cloneFlags[index].value = value;
+      }
+
+      console.log(cloneFlags[index].value);
 
       return {
         ...state,
